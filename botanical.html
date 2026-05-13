@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dunia Botani Ajaib 🌿</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap');
+
+        :root {
+            --accent: #FF7043;
+            --confirm: #81c784;
+            --wrong: #e57373;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+        }
+
+        /* BACKGROUND */
+        .world { position: fixed; inset: 0; z-index: -1; background: black; }
+        #bg-video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* APP WRAPPER */
+        #app { display: flex; justify-content: center; align-items: center; height: 100vh; position: relative; z-index: 10; padding: 10px; }
+
+        /* CARD */
+        .card {
+            width: 870px; height: 560px;
+            background: rgba(255,255,255,0.87);
+            backdrop-filter: blur(14px);
+            border-radius: 50px; border: 10px solid rgba(255,255,255,0.7);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2), 0 0 20px rgba(255,255,255,0.4);
+            position: relative; overflow: hidden; display: flex;
+            transition: 0.3s;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 220px; background: rgba(76,175,80,0.13);
+            display: flex; flex-direction: column;
+            padding: 15px; gap: 10px;
+            border-right: 2px solid rgba(0,0,0,0.05);
+            flex-shrink: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(76,175,80,0.3); border-radius: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar h2 { color:#2e7d32; font-family:'Fredoka'; margin: 0 0 4px; font-size:20px; }
+
+        /* USER BADGE */
+        #user-info-display {
+            background: white; padding: 7px 10px; border-radius: 50px;
+            display: none; align-items: center; gap: 6px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1); border: 2px solid #81c784;
+            width: 100%; font-size: 13px; justify-content: space-between;
+        }
+        #exit-inline-btn {
+            background: #ffebee; border: none; border-radius: 50px;
+            color: #c62828; font-size: 11px; font-weight: 700;
+            font-family: 'Quicksand', sans-serif;
+            padding: 4px 9px; cursor: pointer;
+            transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        #exit-inline-btn:hover { background: #ffcdd2; }
+
+        /* SIDEBAR BUTTONS */
+        .btn-side {
+            background: white; border: none; padding: 10px 12px; border-radius: 15px;
+            font-weight: 700; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 5px 0 #81C784; font-family: 'Quicksand', sans-serif;
+            font-size: 13px; text-align: left;
+        }
+        .btn-side:hover { transform: translateY(-2px); background: #f1f8e9; }
+        .btn-side.active { background: #4CAF50; color: white; box-shadow: 0 5px 0 #2E7D32; }
+        #music-btn { background: #e1bee7; box-shadow: 0 5px 0 #9c27b0; text-align: center; }
+        .btn-quiz-nav { background: #ffeb3b; box-shadow: 0 5px 0 #fbc02d; }
+        .btn-lb { background: #e3f2fd; box-shadow: 0 5px 0 #1565c0; }
+
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1; padding: 30px 40px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+
+        /* PROGRESS */
+        .progress-bar { width: 100%; height: 11px; background: #eee; position: absolute; top: 0; left: 0; }
+        #progress { height: 100%; background: #4caf50; width: 0%; transition: 0.5s; border-radius: 0 8px 8px 0; }
+
+        /* TIMER */
+        #timer {
+            position: absolute; top: 18px; right: 18px;
+            background: #ff5252; color: white; padding: 8px 16px;
+            border-radius: 50px; font-weight: bold; font-size: 18px;
+            box-shadow: 0 5px 0 #b71c1c; display: none; z-index: 100;
+        }
+
+        /* SLIDES */
+        .slide { display: none; text-align: center; width: 100%; }
+        .slide.active { display: flex; flex-direction: column; align-items: center; justify-content: center; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* IMAGES */
+        .materi-img { width: 180px; height: auto; filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12)); margin-bottom: 10px; }
+        .quiz-image { width: 90px; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); margin-bottom: 4px; }
+
+        /* BUTTONS */
+        .btn-quiz {
+            background: var(--accent); color: white; border: none;
+            padding: 16px 40px; border-radius: 50px; font-size: 20px;
+            font-family: 'Fredoka', cursive; cursor: pointer;
+            box-shadow: 0 8px 0 #D84315; margin-top: 18px; transition: 0.2s;
+        }
+        .btn-quiz:active { transform: translateY(4px); box-shadow: 0 4px 0 #D84315; }
+
+        .nav-btns { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; justify-content: center; }
+        .btn-nav {
+            background: white; border: 2px solid #c8e6c9;
+            padding: 11px 26px; border-radius: 30px;
+            font-size: 14px; font-weight: 700;
+            font-family: 'Quicksand', sans-serif; cursor: pointer;
+            box-shadow: 0 5px 0 #81C784; transition: 0.2s; color: #2e7d32;
+        }
+        .btn-nav:hover { transform: translateY(-2px); background: #f1f8e9; }
+        .btn-nav:active { transform: translateY(3px); box-shadow: 0 2px 0 #81C784; }
+        .btn-nav.next { background: #4CAF50; color: white; box-shadow: 0 5px 0 #2E7D32; border-color: #4CAF50; }
+        .btn-nav.next:hover { background: #43A047; }
+
+        /* QUIZ OPTIONS */
+        .quiz-option {
+            width: 100%; background: white; border: 3px solid #eee;
+            padding: 13px 16px; margin: 8px 0; border-radius: 18px;
+            cursor: pointer; font-weight: bold; transition: 0.25s;
+            box-shadow: 0 4px 0 #ddd;
+            display: flex; align-items: center;
+        }
+        .quiz-option:hover { background: #fffde7; transform: scale(1.01); }
+        .quiz-option.correct { background: var(--confirm) !important; border-color: #2e7d32; color: white; box-shadow: 0 4px 0 #1b5e20, 0 0 10px #66bb6a; animation: correctGlow 0.5s infinite alternate; }
+        @keyframes correctGlow { from { box-shadow: 0 4px 0 #1b5e20, 0 0 10px #66bb6a; } to { box-shadow: 0 4px 0 #1b5e20, 0 0 20px #81c784; } }
+        .quiz-option.wrong { background: var(--wrong) !important; border-color: #c62828; color: white; box-shadow: 0 4px 0 #b71c1c; }
+        .quiz-option.wrong .wrong-cross { display: inline; color: #b71c1c; font-size: 1.1em; margin-right: 8px; }
+        .wrong-cross { display: none; }
+
+        /* REGISTRATION */
+        .registration-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .reg-card {
+            background: white; padding: 40px 30px; border-radius: 30px; text-align: center;
+            box-shadow: 0 10px 0 #4caf50; border: 5px solid #81c784; width: 100%; max-width: 380px;
+        }
+
+        /* EXIT CONFIRM OVERLAY */
+        .exit-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .exit-overlay.show { display: flex; }
+        .exit-card {
+            background: white; padding: 36px 30px; border-radius: 30px; text-align: center;
+            box-shadow: 0 10px 0 #c62828; border: 5px solid #ef9a9a; width: 100%; max-width: 360px;
+            animation: slideUp 0.3s ease;
+        }
+        .exit-card h2 { font-family: 'Fredoka'; color: #c62828; margin: 10px 0; }
+        .exit-card p { color: #555; font-size: 15px; margin-bottom: 20px; }
+        .exit-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+        /* GALLERY */
+        .gallery-scroll { width: 100%; overflow-y: auto; max-height: 370px; padding-right: 4px; }
+        .gallery-scroll::-webkit-scrollbar { width: 4px; }
+        .gallery-scroll::-webkit-scrollbar-thumb { background: rgba(76,175,80,0.3); border-radius: 4px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; }
+        .gallery-item {
+            background: rgba(0,0,0,0.05); padding: 8px 4px; border-radius: 14px;
+            filter: grayscale(1); opacity: 0.4; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .gallery-item.unlocked { filter: none; opacity: 1; background: white; border: 2px solid #81c784; }
+        .gallery-item img { width: 36px; height: 36px; object-fit: contain; }
+        .gallery-item p { font-size: 9px; margin: 4px 0 0; text-align: center; line-height: 1.2; }
+
+        /* LEADERBOARD SECTION */
+        #leaderboard .lb-table {
+            width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px;
+        }
+        #leaderboard .lb-table th {
+            background: #4caf50; color: white; padding: 10px 14px;
+            font-family: 'Fredoka'; font-weight: 600; font-size: 16px;
+        }
+        #leaderboard .lb-table td { padding: 10px 14px; border-bottom: 1px solid #e8f5e9; }
+        #leaderboard .lb-table tr:nth-child(even) td { background: #f1f8e9; }
+        #leaderboard .lb-table tr.rank-1 td { background: #fff9c4; font-weight: 700; }
+        #leaderboard .lb-table tr.rank-2 td { background: #f5f5f5; }
+        #leaderboard .lb-table tr.rank-3 td { background: #ffe0b2; }
+        #leaderboard .lb-table tr:hover td { background: #e8f5e9; }
+        .lb-wrap { width: 100%; max-height: 310px; overflow-y: auto; border-radius: 16px; border: 2px solid #c8e6c9; }
+        .btn-danger {
+            background: #ef5350; color: white; border: none;
+            padding: 10px 22px; border-radius: 20px; font-weight: 700;
+            font-family: 'Quicksand'; cursor: pointer;
+            box-shadow: 0 4px 0 #b71c1c; font-size: 14px; transition: 0.2s;
+        }
+        .btn-danger:hover { background: #e53935; }
+        .btn-danger:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
+
+        /* FINISH */
+        #finish .finish-inner {
+            background: rgba(255,255,255,0.75); padding: 28px 36px; border-radius: 40px;
+            border: 5px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        /* ===== RESPONSIVE MOBILE ===== */
+        @media (max-width: 768px) {
+            body, html { overflow: auto; height: auto; }
+            #app { height: auto; min-height: 100dvh; align-items: flex-start; padding: 8px; }
+            .card {
+                flex-direction: column;
+                width: 100%; height: auto; min-height: unset;
+                border-radius: 24px; border-width: 5px;
+            }
+            .sidebar {
+                width: 100%; flex-direction: row;
+                overflow-x: auto; overflow-y: hidden;
+                padding: 10px 8px; gap: 7px;
+                border-right: none; border-bottom: 2px solid rgba(0,0,0,0.06);
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .sidebar::-webkit-scrollbar { display: none; }
+            .sidebar h2, .sidebar hr { display: none !important; }
+            #user-info-display { display: flex !important; flex-shrink: 0; max-width: 180px; }
+            .btn-side { padding: 9px 12px; font-size: 12px; white-space: nowrap; box-shadow: 0 3px 0 #81C784; flex-shrink: 0; }
+            #exit-btn { margin-top: 0; }
+            .main-content { padding: 20px 16px; min-height: 460px; }
+            #timer { top: auto; bottom: 12px; right: 12px; font-size: 14px; padding: 7px 12px; }
+            .materi-img { width: 110px; }
+            .quiz-image { width: 70px; }
+            h1 { font-size: 22px !important; }
+            h2 { font-size: 18px !important; }
+            .btn-quiz { font-size: 17px; padding: 13px 28px; }
+            .btn-nav { font-size: 13px; padding: 10px 18px; }
+            .reg-card { padding: 24px 20px; }
+            .reg-card input { width: 80% !important; font-size: 16px !important; }
+            #leaderboard .lb-table { font-size: 13px; }
+            #leaderboard .lb-table th, #leaderboard .lb-table td { padding: 8px 10px; }
+            .finish-inner { padding: 20px 16px; }
+            #final-score { font-size: 72px !important; }
+            #final-icon { font-size: 80px !important; }
+            #final-msg { font-size: 32px !important; }
+            .gallery-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+            .gallery-scroll { max-height: 280px; }
+        }
+
+        @media (max-width: 400px) {
+            .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+            .btn-quiz { font-size: 15px; padding: 11px 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- REGISTRASI -->
+<div id="registration" class="registration-overlay">
+    <div class="reg-card">
+        <span style="font-size:56px;">🎒</span>
+        <h2 style="font-family:'Fredoka'; color:#2e7d32; margin:10px 0;">Siapa Namamu, Peneliti?</h2>
+        <input type="text" id="username" placeholder="Nama kerenmu..."
+               style="padding:13px; border-radius:15px; border:3px solid #eee; width:78%; font-size:17px; outline:none; text-align:center; font-family:'Quicksand';">
+        <br><br>
+        <button class="btn-quiz" onclick="saveUser()">Masuk Kebun! 🌱</button>
+    </div>
+</div>
+
+<!-- EXIT CONFIRM OVERLAY -->
+<div id="exit-overlay" class="exit-overlay">
+    <div class="exit-card">
+        <span style="font-size:56px;">👋</span>
+        <h2>Mau Keluar?</h2>
+        <p>Progres kuismu akan hilang jika kamu keluar sekarang. Yakin ingin meninggalkan kebun ajaib ini?</p>
+        <div class="exit-actions">
+            <button class="btn-danger" onclick="confirmExit()">Ya, Keluar</button>
+            <button class="btn-nav" onclick="closeExitDialog()">Tetap di Sini 🌿</button>
+        </div>
+    </div>
+</div>
+
+<!-- BACKGROUND VIDEO -->
+<div class="world">
+    <video autoplay muted loop id="bg-video" playsinline>
+        <source src="video.mp4" type="video/mp4">
+    </video>
+</div>
+
+<!-- APP -->
+<div id="app">
+    <div class="card">
+        <div id="timer">⏱️ 10s</div>
+        <div class="progress-bar"><div id="progress"></div></div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <h2>Menu Utama</h2>
+            <div id="user-info-display">
+                <span style="font-size:16px;">🕵️‍♂️</span>
+                <span id="display-player-name" style="font-weight:700; color:#2e7d32; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Peneliti</span>
+                <button id="exit-inline-btn" onclick="showExitDialog()">🚪 Keluar</button>
+            </div>
+            <button class="btn-side active" id="btn-start"       onclick="showSection('start')">🏠 Beranda</button>
+            <button class="btn-side"        id="btn-m1"          onclick="showSection('m1')">🥕 Materi: Akar</button>
+            <button class="btn-side"        id="btn-m2"          onclick="showSection('m2')">🌳 Materi: Batang</button>
+            <button class="btn-side"        id="btn-m3"          onclick="showSection('m3')">🍃 Materi: Daun</button>
+            <button class="btn-side"        id="btn-gallery"     onclick="showSection('gallery')">🖼️ Koleksi Saya</button>
+            <button class="btn-side btn-lb" id="btn-leaderboard" onclick="showSection('leaderboard')">🏆 Leaderboard</button>
+            <hr style="width:100%; border:1px solid rgba(0,0,0,0.1); margin:4px 0;">
+            <button class="btn-side btn-quiz-nav" onclick="startQuiz()">📝 Uji Nyali (Kuis)</button>
+            <button id="music-btn" class="btn-side" onclick="toggleMusic()">🎵 Putar Musik</button>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+
+            <!-- BERANDA -->
+            <div id="start" class="slide active">
+                <span style="font-size:90px; filter:drop-shadow(0 8px 12px rgba(0,0,0,0.1));">👨‍🌾</span>
+                <h1 style="font-size:34px; color:#2e7d32; font-family:'Fredoka',cursive; margin:12px 0 6px;">
+                    Petualangan di Kebun Ajaib 🌿
+                </h1>
+                <div style="background:rgba(255,255,255,0.55); padding:18px 22px; border-radius:28px; max-width:88%;">
+                    <p style="font-size:15px; line-height:1.65; color:#333; margin:0;" id="welcome-text">
+                        "Selamat datang, Peneliti Muda! Aku Pak Tani, penjaga ekosistem ini."
+                    </p>
+                </div>
+                <div class="nav-btns">
+                    <button class="btn-nav next" onclick="navTo('m1')">Mulai Belajar →</button>
+                </div>
+            </div>
+
+            <!-- MATERI AKAR -->
+            <div id="m1" class="slide">
+                <img src="Akarku.gif" class="materi-img" alt="Animasi Akar" style="width:220px; margin-bottom:0;">
+                <h2 style="color:#e64a19; font-family:'Fredoka'; margin:-20px 0 8px;">Akar: Si Sedotan Ajaib</h2>
+                <div style="background:rgba(255,255,255,0.62); padding:18px; border-radius:20px; border-left:8px solid #4caf50; max-width:82%;">
+                    <p style="font-size:17px; margin:0;">Bayangkan akar seperti <b>kumpulan sedotan</b> di dalam tanah. Tugasnya menghisap air dan makanan agar pohon tetap kuat seperti <b>jangkar kapal</b>!</p>
+                </div>
+                <div class="nav-btns">
+                    <button class="btn-nav" onclick="navTo('start')">← Beranda</button>
+                    <button class="btn-nav next" onclick="navTo('m2')">Batang →</button>
+                </div>
+            </div>
+
+            <!-- MATERI BATANG -->
+            <div id="m2" class="slide">
+                <img src="batang.gif" class="materi-img" alt="Animasi Batang">
+                <h2 style="color:#388e3c; font-family:'Fredoka';">Batang: Si Lift Pintar</h2>
+                <div style="background:rgba(255,255,255,0.62); padding:18px; border-radius:20px; border-left:8px solid #4caf50; max-width:82%;">
+                    <p style="font-size:17px;">Batang bekerja seperti <b>lift di gedung tinggi</b>! Ia mengantar air dari akar ke seluruh bagian pohon. Batang juga menjadi <b>tiang penyangga</b> rumah pohon.</p>
+                </div>
+                <div class="nav-btns">
+                    <button class="btn-nav" onclick="navTo('m1')">← Akar</button>
+                    <button class="btn-nav next" onclick="navTo('m3')">Daun →</button>
+                </div>
+            </div>
+
+            <!-- MATERI DAUN -->
+            <div id="m3" class="slide">
+                <img src="daun.gif" class="materi-img" alt="Animasi Daun">
+                <h2 style="color:#1976d2; font-family:'Fredoka';">Daun: Si Koki Hebat</h2>
+                <div style="background:rgba(255,255,255,0.62); padding:18px; border-radius:20px; border-left:8px solid #2196f3; max-width:82%;">
+                    <p style="font-size:17px;">Daun adalah <b>dapur ajaib</b> tempat memasak makanan dengan matahari. Daun juga jadi <b>jendela</b> sirkulasi udara segar untuk kita semua.</p>
+                </div>
+                <div class="nav-btns">
+                    <button class="btn-nav" onclick="navTo('m2')">← Batang</button>
+                    <button class="btn-nav next" onclick="startQuiz()">Uji Nyali! 📝</button>
+                </div>
+            </div>
+
+            <!-- GALERI -->
+            <div id="gallery" class="slide">
+                <h2 style="font-family:'Fredoka'; color:#2e7d32; margin:0 0 8px;">Koleksi Tanaman Anda</h2>
+                <div class="gallery-scroll">
+                    <div class="gallery-grid" id="gallery-container"></div>
+                </div>
+                <button class="btn-nav" style="margin-top:12px;" onclick="showSection('start')">Kembali</button>
+            </div>
+
+            <!-- LEADERBOARD -->
+            <div id="leaderboard" class="slide">
+                <h2 style="font-family:'Fredoka'; color:#2e7d32; margin-bottom:4px;">🏆 Papan Peringkat</h2>
+                <p style="font-size:13px; color:#888; margin:0 0 8px;">Skor tertinggi tiap peneliti</p>
+                <div class="lb-wrap">
+                    <table class="lb-table" id="lb-table">
+                        <thead>
+                            <tr><th>#</th><th>Nama Peneliti</th><th>Skor</th></tr>
+                        </thead>
+                        <tbody id="lb-body"></tbody>
+                    </table>
+                </div>
+                <div class="nav-btns" style="margin-top:14px;">
+                    <button class="btn-danger" onclick="clearLeaderboard()">🗑️ Hapus Semua Data</button>
+                    <button class="btn-nav" onclick="showSection('start')">Kembali</button>
+                </div>
+            </div>
+
+            <!-- KUIS -->
+            <div id="quiz" class="slide">
+                <h3 id="q-title" style="color:#555; margin-bottom:2px;">Soal 1</h3>
+                <img id="q-image" class="quiz-image" src="" alt="Soal">
+                <p id="q-text" style="font-size:22px; font-weight:bold; color:#222; margin:14px 0 6px;">Pertanyaan...</p>
+                <div id="q-options" style="width:92%;"></div>
+                <button id="next-q" class="btn-quiz" style="display:none; font-size:17px;" onclick="loadQuestion()">Lanjut Soal Berikutnya →</button>
+            </div>
+
+            <!-- FINISH -->
+            <div id="finish" class="slide">
+                <div class="finish-inner">
+                    <span id="final-icon" style="font-size:100px; display:block; margin-bottom:8px;">🏆</span>
+                    <h1 id="final-msg" style="font-size:38px; color:#2e7d32; margin:0;">Luar Biasa!</h1>
+                    <p style="font-size:17px; color:#666; margin:8px 0 0;">Skor kecerdasanmu:</p>
+                    <h1 id="final-score" style="font-size:90px; color:var(--accent); margin:6px 0; text-shadow:0 4px 8px rgba(0,0,0,0.1);">0</h1>
+                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:6px;">
+                        <button class="btn-nav" onclick="showSection('leaderboard')">🏆 Lihat Leaderboard</button>
+                        <button class="btn-quiz" style="margin-top:0;" onclick="location.reload()">Main Lagi 🔄</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /main-content -->
+    </div><!-- /card -->
+</div><!-- /app -->
+
+<script>
+    /* ===== AUDIO ===== */
+    let ctx;
+    try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { ctx = null; }
+    const audioAwal   = new Audio('music_awal.mp3');
+    const audioQuiz   = new Audio('music_quiz.mp3');
+    const audioBenar  = new Audio('jwb-benar.mp3');
+    const audioSalah  = new Audio('0-salah-e-salah.mp3');
+    const audioYey    = new Audio('yey.mp3');
+    const audioKecewa = new Audio('kecewa.mp3');
+    audioAwal.loop = audioQuiz.loop = true;
+
+    /* ===== STATE ===== */
+    let score = 100, currentQ = 0, musicPlaying = false;
+    let currentUser = "", timerInterval, timeLeft = 10;
+
+    const questions = [
+        { q:"Apa fungsi utama akar?",                    a:["Memasak makanan","Menyerap air & hara","Tempat bunga"],       c:1, img:"Akarku.gif" },
+        { q:"Zat hijau daun disebut apa?",               a:["Klorofil","Klorox","Pelangi"],                                c:0, img:"daun.gif"   },
+        { q:"Apa yang dibutuhkan untuk fotosintesis?",   a:["Susu & Keju","Air & Matahari","Batu & Tanah"],                c:1, img:"daun.gif"   },
+        { q:"Bagian yang membawa air ke daun adalah...", a:["Duri","Batang","Akar"],                                       c:1, img:"batang.gif" },
+        { q:"Gas apa yang dihasilkan tumbuhan?",         a:["Asap kendaraan","Oksigen","LPG"],                             c:1, img:"daun.gif"   },
+        { q:"Di mana biji biasanya disimpan?",           a:["Di dalam buah","Di atas akar","Di bawah tanah"],              c:0, img:"batang.gif" },
+        { q:"Lubang napas daun namanya apa?",            a:["Pori-pori","Stomata","Hidung"],                               c:1, img:"daun.gif"   },
+        { q:"Energi memasak daun berasal dari?",         a:["Baterai","Sinar Matahari","Api Unggun"],                      c:1, img:"daun.gif"   },
+        { q:"Tumbuhan bernapas menghirup apa?",          a:["Karbondioksida","Oksigen","Nitrogen"],                        c:0, img:"daun.gif"   },
+        { q:"Masak makanan di daun disebut...",          a:["Reboisasi","Fotosintesis","Masak-masakan"],                   c:1, img:"daun.gif"   }
+    ];
+
+    /* ===== REGISTRASI ===== */
+    function saveUser() {
+        const input = document.getElementById('username').value.trim();
+        if (!input) { alert("Masukkan nama dulu ya!"); return; }
+        currentUser = input;
+        document.getElementById('display-player-name').innerText = currentUser;
+        document.getElementById('user-info-display').style.display = 'flex';
+        document.getElementById('registration').style.display = 'none';
+        document.getElementById('welcome-text').innerHTML =
+            `"Selamat datang, <b>${currentUser}!</b> Aku Pak Tani, penjaga ekosistem ini. Siap menjadi Ahli Botani?"`;
+        playSfx(800, 0.2);
+    }
+
+    /* Izinkan tekan Enter di input nama */
+    document.getElementById('username').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') saveUser();
+    });
+
+    /* ===== EXIT DIALOG ===== */
+    function showExitDialog() {
+        playSfx(400, 0.1);
+        document.getElementById('exit-overlay').classList.add('show');
+    }
+
+    function closeExitDialog() {
+        playSfx(520, 0.08, 'triangle');
+        document.getElementById('exit-overlay').classList.remove('show');
+    }
+
+    function confirmExit() {
+        /* Hentikan semua audio & timer sebelum reload */
+        clearInterval(timerInterval);
+        audioAwal.pause();
+        audioQuiz.pause();
+        location.reload();
+    }
+
+    /* ===== TIMER ===== */
+    function startTimer() {
+        timeLeft = 10;
+        const el = document.getElementById('timer');
+        el.style.display = 'block';
+        el.innerText = `⏱️ ${timeLeft}s`;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            el.innerText = `⏱️ ${timeLeft}s`;
+            if (timeLeft <= 0) { clearInterval(timerInterval); handleTimeout(); }
+        }, 1000);
+    }
+
+    function handleTimeout() {
+        document.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
+        score -= 10;
+        audioSalah.currentTime = 0; audioSalah.play().catch(() => {});
+        document.getElementById('next-q').style.display = 'inline-block';
+        currentQ++;
+    }
+
+    /* ===== MUSIK ===== */
+    function toggleMusic() {
+        if (ctx && ctx.state === 'suspended') ctx.resume();
+        const btn = document.getElementById('music-btn');
+        if (!musicPlaying) {
+            const target = document.getElementById('quiz').classList.contains('active') ? audioQuiz : audioAwal;
+            target.play().catch(() => {});
+            musicPlaying = true;
+            btn.innerText = "🔊 Musik: ON";
+            btn.style.background = "#81c784";
+        } else {
+            audioAwal.pause(); audioQuiz.pause();
+            musicPlaying = false;
+            btn.innerText = "🔇 Musik: OFF";
+            btn.style.background = "#e1bee7";
+        }
+    }
+
+    /* ===== NAVIGASI ===== */
+    function showSection(id) {
+        playSfx(600, 0.1);
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.btn-side').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        const btn = document.getElementById('btn-' + id);
+        if (btn) btn.classList.add('active');
+        if (id === 'gallery') renderGallery();
+        if (id === 'leaderboard') renderLeaderboard();
+        if (musicPlaying && id !== 'quiz' && id !== 'finish') {
+            audioQuiz.pause();
+            audioAwal.play().catch(() => {});
+        }
+    }
+
+    function navTo(id) {
+        playSfx(520, 0.08, 'triangle');
+        setTimeout(() => playSfx(720, 0.08, 'triangle'), 80);
+        showSection(id);
+    }
+
+    /* ===== KUIS ===== */
+    function startQuiz() {
+        playSfx(800, 0.2);
+        score = 100;
+        currentQ = 0;
+        if (window.innerWidth > 768) document.getElementById('sidebar').style.display = 'none';
+        if (musicPlaying) { audioAwal.pause(); audioQuiz.currentTime = 0; audioQuiz.play().catch(() => {}); }
+        showSection('quiz');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQ >= questions.length) { showFinish(); return; }
+        startTimer();
+        document.getElementById('next-q').style.display = 'none';
+        const data = questions[currentQ];
+        document.getElementById('q-title').innerText = `Tantangan ${currentQ + 1} dari 10`;
+        document.getElementById('q-text').innerText = data.q;
+        document.getElementById('q-image').src = data.img;
+        const optDiv = document.getElementById('q-options');
+        optDiv.innerHTML = '';
+        data.a.forEach((opt, i) => {
+            const b = document.createElement('div');
+            b.className = 'quiz-option';
+            b.innerHTML = `<span class="wrong-cross">❌</span>${opt}`;
+            b.onclick = () => checkAns(b, i, data.c);
+            optDiv.appendChild(b);
+        });
+        document.getElementById('progress').style.width = (currentQ * 10) + "%";
+    }
+
+    function checkAns(btn, idx, correct) {
+        clearInterval(timerInterval);
+        document.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
+        if (idx === correct) {
+            btn.classList.add('correct');
+            audioBenar.currentTime = 0; audioBenar.play().catch(() => {});
+            createConfetti(); unlockPlant(currentQ);
+        } else {
+            btn.classList.add('wrong');
+            score -= 10;
+            audioSalah.currentTime = 0; audioSalah.play().catch(() => {});
+        }
+        document.getElementById('next-q').style.display = 'inline-block';
+        currentQ++;
+    }
+
+    /* ===== GALERI ===== */
+    const plantNames = ["Akar Tunggang","Klorofil","Surya Foto","Batang Kayu","Oksigen Murni","Biji Buah","Stomata","Energi Cahaya","Karbondioksida","Proses Foto"];
+
+    function unlockPlant(index) {
+        let col = JSON.parse(localStorage.getItem('botani_collection')) || [];
+        if (!col.includes(index)) { col.push(index); localStorage.setItem('botani_collection', JSON.stringify(col)); }
+    }
+
+    function renderGallery() {
+        const container = document.getElementById('gallery-container');
+        const col = JSON.parse(localStorage.getItem('botani_collection')) || [];
+        container.innerHTML = questions.map((q, i) => {
+            const ok = col.includes(i);
+            return `<div class="gallery-item ${ok ? 'unlocked' : ''}">
+                        <img src="${q.img}" alt="${ok ? plantNames[i] : '???'}">
+                        <p>${ok ? plantNames[i] : '???'}</p>
+                    </div>`;
+        }).join('');
+    }
+
+    /* ===== LEADERBOARD ===== */
+    function saveToLeaderboard() {
+        let board = JSON.parse(localStorage.getItem('botani_leaderboard')) || [];
+        const idx = board.findIndex(e => e.name.toLowerCase() === currentUser.toLowerCase());
+        if (idx >= 0) {
+            if (score > board[idx].score) board[idx].score = score;
+        } else {
+            board.push({ name: currentUser, score: score });
+        }
+        board.sort((a, b) => b.score - a.score);
+        localStorage.setItem('botani_leaderboard', JSON.stringify(board));
+    }
+
+    function renderLeaderboard() {
+        const board = JSON.parse(localStorage.getItem('botani_leaderboard')) || [];
+        const medals = ['🥇','🥈','🥉'];
+        const tbody = document.getElementById('lb-body');
+        if (board.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#aaa; padding:20px;">Belum ada data. Mainkan kuisnya dulu! 🌱</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = board.map((e, i) =>
+            `<tr class="${i < 3 ? 'rank-'+(i+1) : ''}">
+                <td style="text-align:center;">${medals[i] || (i+1)}</td>
+                <td>${e.name}</td>
+                <td style="text-align:center; font-weight:700; color:var(--accent);">${e.score}</td>
+            </tr>`
+        ).join('');
+    }
+
+    function clearLeaderboard() {
+        if (!confirm('Hapus semua data leaderboard? Ini tidak bisa dibatalkan!')) return;
+        localStorage.removeItem('botani_leaderboard');
+        renderLeaderboard();
+        playSfx(300, 0.1);
+    }
+
+    /* ===== FINISH ===== */
+    function showFinish() {
+        clearInterval(timerInterval);
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('sidebar').style.display = '';
+        saveToLeaderboard();
+        showSection('finish');
+        document.getElementById('progress').style.width = "100%";
+        document.getElementById('final-score').innerText = score;
+        audioQuiz.pause();
+        if (score >= 70) {
+            document.getElementById('final-icon').innerText = '🏆';
+            document.getElementById('final-msg').innerText = 'Luar Biasa!';
+            audioYey.play().catch(() => {}); createConfetti();
+        } else {
+            document.getElementById('final-icon').innerText = '😔';
+            document.getElementById('final-msg').innerText = 'Ayo Belajar Lagi!';
+            audioKecewa.play().catch(() => {});
+        }
+    }
+
+    /* ===== CONFETTI & SFX ===== */
+    function createConfetti() {
+        const canvas = document.createElement('canvas');
+        Object.assign(canvas.style, { position:'fixed', top:'0', left:'0', width:'100%', height:'100%', zIndex:'999', pointerEvents:'none' });
+        document.body.appendChild(canvas);
+        const c = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const colors = ['#f44336','#e91e63','#9c27b0','#4caf50','#ffeb3b','#2196f3'];
+        let pieces = Array.from({length:140}, () => ({
+            x: window.innerWidth/2, y: window.innerHeight/1.2,
+            size: Math.random()*0.8+0.4, gravity: Math.random()*0.1+0.08,
+            rotation: Math.random()*Math.PI*2, rotationSpeed: Math.random()*0.1-0.05,
+            color: colors[Math.floor(Math.random()*colors.length)],
+            speedX: Math.random()*6-3, speedY: Math.random()*-15-4
+        }));
+        (function loop() {
+            c.clearRect(0,0,canvas.width,canvas.height);
+            pieces = pieces.filter(p => p.y < canvas.height);
+            pieces.forEach(p => {
+                p.speedY += p.gravity; p.x += p.speedX; p.y += p.speedY; p.rotation += p.rotationSpeed;
+                c.save(); c.translate(p.x,p.y); c.rotate(p.rotation); c.scale(p.size,p.size);
+                c.fillStyle = p.color; c.fillRect(0,0,10,10); c.restore();
+            });
+            if (pieces.length) requestAnimationFrame(loop); else canvas.remove();
+        })();
+    }
+
+    function playSfx(f, d, t='sine') {
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        try {
+            const o = ctx.createOscillator(), g = ctx.createGain();
+            o.type = t; o.frequency.value = f; g.gain.value = 0.5;
+            o.connect(g); g.connect(ctx.destination);
+            o.start(); o.stop(ctx.currentTime + d);
+        } catch(e) {}
+    }
+</script>
+</body>
+</html>
